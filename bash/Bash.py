@@ -9,4 +9,5 @@ def execute_command(command):
         stderr=subprocess.STDOUT
     )
     stdout, stderr = out.communicate()
+    print(stdout, stderr)
     return stdout + stderr
