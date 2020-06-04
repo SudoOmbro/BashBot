@@ -33,4 +33,4 @@ class BashBot:
             out = execute_command(command)
             send_message(update, context, out)
         else:
-            send_message("You don't have access to this Bot")
+            send_message(update, context, "You don't have access to this Bot")
