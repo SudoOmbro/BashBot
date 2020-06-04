@@ -10,4 +10,6 @@ def execute_command(command):
     )
     stdout, stderr = out.communicate()
     print(stdout, stderr)
-    return stdout + stderr
+    if stderr is not None:
+        return stdout + stderr
+    return stdout
