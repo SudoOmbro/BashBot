@@ -6,7 +6,8 @@ def execute_command(command):
     out = subprocess.Popen(
         args_list,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT
+        stderr=subprocess.STDOUT,
+        shell=True
     )
     stdout, stderr = out.communicate()
     if stderr is not None:
