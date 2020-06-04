@@ -7,7 +7,6 @@ def execute_command(command):
         args_list,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        shell=True
     )
     stdout, stderr = out.communicate()
     if stderr is not None:
