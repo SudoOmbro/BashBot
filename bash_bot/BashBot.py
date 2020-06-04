@@ -1,3 +1,4 @@
+
 from telegram.ext import Updater, MessageHandler, Filters
 
 from bash.Bash import execute_command
@@ -31,3 +32,5 @@ class BashBot:
             command = update.message.text
             out = execute_command(command)
             send_message(update, context, out)
+        else:
+            send_message("You don't have access to this Bot")
