@@ -4,7 +4,7 @@ import json
 
 def main():
     # load options from Json file
-    file = open("config_template.json", mode="r")
+    file = open("config.json", mode="r")
     config = json.load(file)
     token = config["telegram_bot_token"]
     whitelist = config["whitelist"]
