@@ -13,6 +13,7 @@ def send_message_safe(update, context, text):
 
 
 def send_message(update, context, text):
+    print("text to send:", text)
     context.bot.send_message(
         chat_id=update.message.chat.id,
         text=text
