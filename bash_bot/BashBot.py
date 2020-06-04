@@ -31,6 +31,6 @@ class BashBot:
         if self.check_permission(update):
             command = update.message.text
             out = execute_command(command)
-            send_message(update, context, out)
+            send_message(update, context, out.decode("utf-8"))
         else:
             send_message(update, context, "You don't have access to this Bot")
