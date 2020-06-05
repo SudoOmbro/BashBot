@@ -1,4 +1,4 @@
-
+from telegram import ParseMode
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 
 from bash.bash import execute_command
@@ -38,7 +38,7 @@ class BashBot:
 
     def _start_command_handler(self, update, context):
         username = update.effective_user.first_name
-        send_message(update, context, self._START_TEXT.format(username))
+        send_message(update, context, self._START_TEXT.format(username), parse_mode=ParseMode.MARKDOWN)
 
     def _help_command_handler(self, update, context):
         text = self._BASE_COMMANDS_TEXT
@@ -46,7 +46,7 @@ class BashBot:
             text += "\n\n*SHORTCUTS*\n"
             for line in self._shortcuts:
                 text += line
-        send_message(update, context, text)
+        send_message(update, context, text, parse_mode=ParseMode.MARKDOWN)
 
     def _check_permission(self, update):
         if self._whiteList is not None:

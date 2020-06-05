@@ -1,11 +1,12 @@
 from telegram import TelegramError, InlineKeyboardMarkup, ParseMode
 
 
-def send_message(update, context, text):
+def send_message(update, context, text, parse_mode=None):
     try:
         context.bot.send_message(
             chat_id=update.message.chat.id,
-            text=text
+            text=text,
+            parse_mode=parse_mode
         )
     except TelegramError as e:
         print("can't send the message")
