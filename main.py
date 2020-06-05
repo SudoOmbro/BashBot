@@ -1,4 +1,4 @@
-from bash_bot.BashBot import BashBot
+from bash_bot.bot import BashBot
 import json
 
 
@@ -9,6 +9,7 @@ def main():
     config = json.load(file)
     token = config["telegram_bot_token"]
     whitelist = config["whitelist"]
+    file.close()
 
     # create and start bot
     bot = BashBot(token, whitelist)
