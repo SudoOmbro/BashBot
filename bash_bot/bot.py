@@ -2,7 +2,7 @@ from telegram import ParseMode, InlineKeyboardButton
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 
 from utils.bash import execute_command
-from bash_bot.Functions import send_message, send_message_ik
+from bash_bot.functions import send_message, send_message_ik
 
 
 class BashBot:
