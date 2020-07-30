@@ -3,17 +3,20 @@
     {
       "name": "script 0 name",
       "body": "script 0 description",
-      "description": "script 0 description"
+      "description": "script 0 description",
+      "verbose": true
     },
     {
       "name": "script 1 name",
       "script": "script 1 description",
-      "description": "script 1 description"
+      "description": "script 1 description",
+      "verbose": false
     },
     {
       "name": "script 2 name",
       "script": "script 2 description",
-      "description": "script 2 description"
+      "description": "script 2 description",
+      "verbose": true
     }
   ]
 }

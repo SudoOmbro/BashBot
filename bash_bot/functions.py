@@ -1,11 +1,12 @@
 from telegram import TelegramError, InlineKeyboardMarkup, ParseMode, InlineKeyboardButton
+from telegram.error import BadRequest
 
 
 def send_message(update, context, text, parse_mode=None, keyboard=None):
     """ safe and short way of sending a message to a user """
     try:
         context.bot.send_message(
-            chat_id=update.message.chat.id,
+            chat_id=update.effective_user.id,
             text=text,
             parse_mode=parse_mode,
             reply_markup=keyboard
@@ -13,17 +14,17 @@ def send_message(update, context, text, parse_mode=None, keyboard=None):
     except TelegramError as e:
         print("can't send the message")
         print(e)
+    except BadRequest as e:
+        print("bad request")
+        print(e)
 
 
-def get_inline_keyboard_from_string_list(input_list, columns=1):
+def get_inline_keyboard_from_string_list(input_list):
     """ creates an inline keyboard from a list of strings, the callback data of the buttons is
-    the string that is on the button itself. Optionally the number of columns can be set, by default it's 1"""
+    the string that is on the button itself. """
     button_list = []
     for element in input_list:
-        row = []
-        for i in range(columns):
-            row.append(InlineKeyboardButton(element, callback_data="element"))
-        button_list.append(row)
+        button_list.append([InlineKeyboardButton(element, callback_data=element)])
     return InlineKeyboardMarkup(button_list)
 
 
@@ -35,3 +36,5 @@ def delete_callback_message(update, context):
                                    )
     except TelegramError:
         print("The message is too old to be deleted.")
+    except BadRequest as e:
+        print(e)

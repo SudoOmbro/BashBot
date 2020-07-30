@@ -20,7 +20,7 @@ def load_scripts_json():
     if os.path.exists(SCRIPTS_FILE_NAME):
         return load_json_from_file(SCRIPTS_FILE_NAME)
     print("no script.json file found, generating an empty one")
-    scripts = {}
+    scripts = {"scripts": []}
     save_json_to_file(scripts, SCRIPTS_FILE_NAME)
     return scripts
 
