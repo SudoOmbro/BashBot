@@ -1,6 +1,19 @@
 {
-  "SCRIPT 0 NAME": "script 0",
-  "SCRIPT 1 NAME": "script 1",
-  "SCRIPT 2 NAME": "script 2",
-  "...": "..."
+  "scripts": [
+    {
+      "name": "script 0 name",
+      "body": "script 0 description",
+      "description": "script 0 description"
+    },
+    {
+      "name": "script 1 name",
+      "script": "script 1 description",
+      "description": "script 1 description"
+    },
+    {
+      "name": "script 2 name",
+      "script": "script 2 description",
+      "description": "script 2 description"
+    }
+  ]
 }

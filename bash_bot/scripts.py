@@ -6,4 +6,4 @@ class Script:
         self.description = description
 
     def __str__(self):
-        return "{}:\n{}\n\n{}".format(self.name, self.description, self.body)
+        return "{}:\n{}\n\nbody:\n{}".format(self.name, self.description, self.body)

@@ -1,35 +1,40 @@
-from telegram import ParseMode, InlineKeyboardButton
+from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
 
+from bash_bot.scripts import Script
 from utils.bash import execute_command
-from bash_bot.functions import send_message, send_message_ik
+from bash_bot.functions import send_message, get_inline_keyboard_from_string_list
+from utils.resources import Resources
 
 
 class BashBot:
 
-    _START_TEXT = "Welcome to BashBot {}!\nUse /help to see all the commands and shortcuts"
-    _BASE_COMMANDS_TEXT = """
-    *COMMANDS*
-    /start - _shows bot welcome._
-    /help - _shows commands + shortcuts_.
-    /options - _lets you manage the bot_.
-    /download [filename] - _lets you download a file from the machine_.
-    /scripts - _shows all the saved scripts_.
-    """
-    _ACCESS_DENIED_TEXT = "You don't have access to this Bot"
-    _OPTIONS_TEXT = "Here's what *you* can do"
-    _OPTIONS_KEYBOARD = [
-        [InlineKeyboardButton("add user ID to Whitelist", callback_data="addToWhitelist")],
-        [InlineKeyboardButton("remove user ID from Whitelist", callback_data="removeFromWhitelist")],
-        [InlineKeyboardButton("add shortcut", callback_data="addShortcut")],
-        [InlineKeyboardButton("remove shortcut", callback_data="removeShortcut")]
-    ]
+    [
+
+        CHOOSE_SCRIPT,
+        CONFIRM_SCRIPT
+
+    ] = range(2)
+
+    @staticmethod
+    def _get_scripts(scripts):
+        scripts_json_data = scripts["scripts"]
+        result = []
+        for element in scripts_json_data:
+            result.append(Script(
+                element["name"],
+                element["body"],
+                element["description"]
+            ))
+        return result
 
     def __init__(self, config, scripts):
         """ initialize all of the bot's variables """
+        # init resources
+        self._res = Resources()
+        # init telegram stuff
         bot_token = config["telegram_bot_token"]
         whitelist = config["whitelist"]
-        self._scripts = scripts
         self._updater = Updater(bot_token, use_context=True)
         self._updater.dispatcher.add_handler(CommandHandler('start', self._start_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('help', self._help_command_handler))
@@ -37,10 +42,12 @@ class BashBot:
         self._updater.dispatcher.add_handler(CommandHandler('download', self._download_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('scripts', self._scripts_command_handler))
         self._updater.dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), self._handle_command))
+        # check if there is a whitelist
         if len(whitelist) != 0:
             self._whiteList = whitelist
         else:
             self._whiteList = None
+        self._scripts = self._get_scripts(scripts)
 
     def start(self):
         """ start the bot """
@@ -64,18 +71,18 @@ class BashBot:
             out = execute_command(command)
             send_message(update, context, out.decode("utf-8"))
         else:
-            send_message(update, context, self._ACCESS_DENIED_TEXT)
+            send_message(update, context, self._res.ACCESS_DENIED_TEXT)
 
     # telegram command handlers ----------------------------------------------------------------------------------------
 
     def _start_command_handler(self, update, context):
         """ greets the user """
         username = update.effective_user.first_name
-        send_message(update, context, self._START_TEXT.format(username))
+        send_message(update, context, self._res.START_TEXT.format(username))
 
     def _help_command_handler(self, update, context):
         """ sends the user the commands + scripts list """
-        text = self._BASE_COMMANDS_TEXT
+        text = self._res.BASE_COMMANDS_TEXT
         if len(self._scripts) != 0:
             # FIXME
             text += "\n\n*SCRIPTS*\n"
@@ -86,7 +93,7 @@ class BashBot:
     def _options_command_handler(self, update, context):
         """ shows the user the options keyboard """
         if self._check_permission(update):
-            send_message_ik(update, context, self._OPTIONS_TEXT, self._OPTIONS_KEYBOARD)
+            send_message(update, context, self._res.OPTIONS_TEXT, keyboard=self._res.OPTIONS_KEYBOARD)
 
     def _download_command_handler(self, update, context):
         """ lets the user download a file from the machine """
@@ -94,15 +101,27 @@ class BashBot:
             send_message(update, context, "This feature has yet to be implemented")
             # TODO
         else:
-            send_message(update, context, self._ACCESS_DENIED_TEXT)
+            send_message(update, context, self._res.ACCESS_DENIED_TEXT)
 
     def _scripts_command_handler(self, update, context):
         """ shows the user all the available scripts """
         if self._check_permission(update):
-            send_message(update, context, "This feature has yet to be implemented")
-            # TODO
+            if len(self._scripts) == 0:
+                send_message(update, context, self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
+                return
+            script_name_list = []
+            for script in self._scripts:
+                script_name_list.append(script.name)
+            keyboard = get_inline_keyboard_from_string_list(script_name_list)
+            send_message(
+                update,
+                context,
+                self._res.SCRIPTS_TEXT,
+                parse_mode=ParseMode.MARKDOWN,
+                keyboard=keyboard
+            )
         else:
-            send_message(update, context, self._ACCESS_DENIED_TEXT)
+            send_message(update, context, self._res.ACCESS_DENIED_TEXT)
 
     # basic shell command handlers -------------------------------------------------------------------------------------
 
