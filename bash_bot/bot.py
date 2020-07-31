@@ -7,7 +7,8 @@ from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, Callb
 
 from bash_bot.scripts import Script
 from utils.bash import Shell
-from bash_bot.functions import send_message, get_inline_keyboard_from_string_list, delete_callback_message
+from bash_bot.functions import send_message, get_inline_keyboard_from_string_list, delete_callback_message, \
+    get_inline_keyboard_from_script_list
 from utils.resources import Resources
 
 
@@ -131,7 +132,6 @@ class BashBot:
         self._updater.dispatcher.add_handler(CommandHandler('start', self._start_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('help', self._help_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('h', self._help_command_handler))
-        self._updater.dispatcher.add_handler(CommandHandler('upload', self._upload_command_handler))
         # text message handler
         self._updater.dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), self._handle_command))
         # callback query handlers
@@ -270,10 +270,7 @@ class BashBot:
             if len(self._scripts) == 0:
                 send_message(update, context, self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
                 return ConversationHandler.END
-            script_name_list = []
-            for script in self._scripts:
-                script_name_list.append(script.name)
-            keyboard = get_inline_keyboard_from_string_list(script_name_list)
+            keyboard = get_inline_keyboard_from_script_list(self._scripts)
             send_message(
                 update,
                 context,

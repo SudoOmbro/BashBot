@@ -43,6 +43,14 @@ def get_inline_keyboard_from_string_list(input_list):
     return InlineKeyboardMarkup(button_list)
 
 
+def get_inline_keyboard_from_script_list(script_list):
+    button_list = []
+    for script in script_list:
+        name = script.name
+        button_list.append([InlineKeyboardButton(name, callback_data=name)])
+    return InlineKeyboardMarkup(button_list)
+
+
 def delete_callback_message(update, context):
     """ safe and short way of deleting a message from callback """
     try:
