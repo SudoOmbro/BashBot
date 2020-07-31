@@ -25,12 +25,13 @@ class BashBot:
 
         DOWNLOAD,
         UPLOAD,
+        SCRIPT_SELECT,
         # options
         OPTIONS,
         ADD_USER,
         REMOVE_USER
 
-    ] = range(5)
+    ] = range(6)
 
     WORKING_DIRECTORY = os.getcwd()
 
@@ -112,12 +113,25 @@ class BashBot:
                 CommandHandler("end", self._end_conversation_handler)
             ]
         ))
+        # scripts
+        self._updater.dispatcher.add_handler(ConversationHandler(
+            entry_points=[
+                CommandHandler('scripts', self._scripts_command_handler)
+            ],
+            states={
+                self.SCRIPT_SELECT: [
+                    CallbackQueryHandler(self._handle_script)
+                ]
+            },
+            fallbacks=[
+                CommandHandler("end", self._end_conversation_handler)
+            ]
+        ))
         # command handlers
         self._updater.dispatcher.add_handler(CommandHandler('start', self._start_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('help', self._help_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('h', self._help_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('upload', self._upload_command_handler))
-        self._updater.dispatcher.add_handler(CommandHandler('scripts', self._scripts_command_handler))
         # text message handler
         self._updater.dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), self._handle_command))
         # callback query handlers
@@ -251,15 +265,11 @@ class BashBot:
             return ConversationHandler.END
 
     def _scripts_command_handler(self, update, context):
-        send_message(update, context, text="this feature isn't complete yet")
-        return ConversationHandler.END
-
-    def _scripts_command_handler_WIP(self, update, context):
         """ shows the user all the available scripts """
         if self._check_permission(update):
             if len(self._scripts) == 0:
                 send_message(update, context, self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
-                return
+                return ConversationHandler.END
             script_name_list = []
             for script in self._scripts:
                 script_name_list.append(script.name)
@@ -271,8 +281,10 @@ class BashBot:
                 parse_mode=ParseMode.MARKDOWN,
                 keyboard=keyboard
             )
+            return self.SCRIPT_SELECT
         else:
             send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+            return ConversationHandler.END
 
     # basic shell command handlers -------------------------------------------------------------------------------------
 
@@ -284,16 +296,18 @@ class BashBot:
     def _handle_script(self, update, context):
         """ handle the execution of a script """
         if self._check_permission(update):
-            script = context.chat_data["selected_script"]
+            script = Script.get_script_from_name(self._scripts, update.callback_query.data)
             if script.verbose:
-                for command in script.description.split("\n"):
+                for command in script.body.split("\n"):
                     self._handle_shell_input(update, context, command)
             else:
-                for command in script.description.split("\n"):
+                for command in script.body.split("\n"):
                     self.shell.execute_command(command)
             send_message(update, context, self._res.SCRIPT_DONE_TEXT.format(script.name))
         else:
             send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+        delete_callback_message(update, context)
+        return ConversationHandler.END
 
     # options callback / conversation handlers -------------------------------------------------------------------------
 
@@ -327,7 +341,7 @@ class BashBot:
             send_message(update, context, self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
         else:
             for script in self._scripts:
-                send_message(update, context, script, parse_mode=ParseMode.MARKDOWN)
+                send_message(update, context, str(script), parse_mode=ParseMode.MARKDOWN)
         self._options_command_handler(update, context)
 
     # add to whitelist --->

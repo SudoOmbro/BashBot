@@ -16,7 +16,7 @@ class Resources:
         /options - _lets you manage the bot_. (WIP)
         /download - _lets you download a file from the current folder_.
         /upload - _lets you upload a file to the current folder_.
-        /scripts - _shows all the saved scripts_. (WIP)
+        /scripts - _shows all the saved scripts_.
         """
     ACCESS_DENIED_TEXT = "You don't have access to this Bot"
     OPTIONS_TEXT = "Here's what *you* can do"
