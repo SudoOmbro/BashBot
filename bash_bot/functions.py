@@ -2,21 +2,36 @@ from telegram import TelegramError, InlineKeyboardMarkup, ParseMode, InlineKeybo
 from telegram.error import BadRequest
 
 
-def send_message(update, context, text, parse_mode=None, keyboard=None):
+def send_message(update, context, text, parse_mode=None, keyboard=None, file=None):
     """ safe and short way of sending a message to a user """
-    try:
-        context.bot.send_message(
-            chat_id=update.effective_user.id,
-            text=text,
-            parse_mode=parse_mode,
-            reply_markup=keyboard
-        )
-    except TelegramError as e:
-        print("can't send the message")
-        print(e)
-    except BadRequest as e:
-        print("bad request")
-        print(e)
+    if file is None:
+        try:
+            context.bot.send_message(
+                chat_id=update.effective_user.id,
+                text=text,
+                parse_mode=parse_mode,
+                reply_markup=keyboard,
+            )
+        except TelegramError as e:
+            print("can't send the message")
+            print(e)
+        except BadRequest as e:
+            print("bad request")
+            print(e)
+    else:
+        try:
+            context.bot.send_document(
+                chat_id=update.effective_user.id,
+                caption=text,
+                parse_mode=parse_mode,
+                document=file,
+            )
+        except TelegramError as e:
+            print("can't send the message")
+            print(e)
+        except BadRequest as e:
+            print("bad request")
+            print(e)
 
 
 def get_inline_keyboard_from_string_list(input_list):

@@ -11,19 +11,28 @@ class Resources:
     START_TEXT = "Welcome to BashBot {}!\nUse /help to see all the commands and shortcuts"
     BASE_COMMANDS_TEXT = """
         *COMMANDS*
-        /start - _shows bot welcome._
-        /help - _shows commands + shortcuts_.
-        /options - _lets you manage the bot_.
-        /download [filename] - _lets you download a file from the machine_.
-        /scripts - _shows all the saved scripts_.
+        /start - _shows bot welcome_.
+        /help, /h - _shows commands_.
+        /options - _lets you manage the bot_. (WIP)
+        /download - _lets you download a file from the current folder_.
+        /upload - _lets you upload a file to the current folder_.
+        /scripts - _shows all the saved scripts_. (WIP)
         """
     ACCESS_DENIED_TEXT = "You don't have access to this Bot"
     OPTIONS_TEXT = "Here's what *you* can do"
     CONFIRM_TEXT = "Are you sure?"
     CANCEL_TEXT = "Alright, the operation was cancelled."
     END_TEXT = "Ok, back to the main menu"
+    # download
+    DOWNLOAD_TEXT = "write the name of the file you want to download to your device"
+    DOWNLOAD_FAILED = "Could not find the specified file"
+    DOWNLOAD_SUCCESS = "Here's the requested file"
+    # upload
+    UPLOAD_TEXT = "Send the file you want to upload in the current folder"
+    UPLOAD_FAILED = "*Upload failed!*"
+    UPLOAD_SUCCESS = "*Upload successful!*"
     # scripts
-    SCRIPTS_TEXT = "Here's a list of *all the scripts* you have saved"
+    SCRIPTS_TEXT = "Here's a list of *all the scripts* you have saved, *click* on the one you want to use."
     NO_SCRIPTS_TEXT = "You *don't* have any saved scripts!"
     SCRIPT_DONE_TEXT = "Finished execution of '{}' script!"
     # add to whitelist
@@ -41,9 +50,17 @@ class Resources:
         [InlineKeyboardButton("remove user ID from Whitelist", callback_data="removeFromWhitelist")],
         [InlineKeyboardButton("see all scripts", callback_data="seeAllScripts")],
         [InlineKeyboardButton("add script", callback_data="addScript"),
-         InlineKeyboardButton("remove script", callback_data="removeScript")]
+         InlineKeyboardButton("remove script", callback_data="removeScript")],
+        [InlineKeyboardButton("Back", callback_data="back")]
     ])
     CONFIRM_KEYBOARD = InlineKeyboardMarkup([
         [InlineKeyboardButton("confirm", callback_data="yes")],
         [InlineKeyboardButton("cancel", callback_data="no")]
+    ])
+    EDIT_SCRIPT_KEYBOARD = InlineKeyboardMarkup([
+        [InlineKeyboardButton("change title", callback_data="changeTitle"),
+         InlineKeyboardButton("change description", callback_data="changeDescription")],
+        [InlineKeyboardButton("change body", callback_data="changeBody")],
+        [InlineKeyboardButton("toggle verbose", callback_data="toggleVerbose")],
+        [InlineKeyboardButton("Back", callback_data="back")]
     ])

@@ -1,11 +1,12 @@
 import logging
+import os
 import traceback
 
-from telegram import ParseMode, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import ParseMode, TelegramError
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler, ConversationHandler
 
 from bash_bot.scripts import Script
-from utils.bash import execute_command
+from utils.bash import Shell
 from bash_bot.functions import send_message, get_inline_keyboard_from_string_list, delete_callback_message
 from utils.resources import Resources
 
@@ -22,24 +23,16 @@ class BashBot:
 
     [
 
+        DOWNLOAD,
+        UPLOAD,
+        # options
         OPTIONS,
         ADD_USER,
         REMOVE_USER
 
-    ] = range(3)
+    ] = range(5)
 
-    @staticmethod
-    def _get_scripts(scripts_json):
-        scripts_json_data = scripts_json["scripts"]
-        result = []
-        for element in scripts_json_data:
-            result.append(Script(
-                element["name"],
-                element["body"],
-                element["description"],
-                element["verbose"]
-            ))
-        return result
+    WORKING_DIRECTORY = os.getcwd()
 
     def __init__(self, config, scripts_json):
         """ initialize all of the bot's variables """
@@ -52,6 +45,7 @@ class BashBot:
         # conversation handlers
         yes_handler = CallbackQueryHandler(self._action_confirm_handler, pattern="yes")
         no_handler = CallbackQueryHandler(self._action_cancelled_handler, pattern="no")
+        # options
         self._updater.dispatcher.add_handler(ConversationHandler(
             entry_points=[
                 CommandHandler('options', self._options_command_handler)
@@ -69,6 +63,10 @@ class BashBot:
                     CallbackQueryHandler(
                         self._show_scripts_callback_handler,
                         pattern="seeAllScripts"
+                    ),
+                    CallbackQueryHandler(
+                        self._end_conversation_handler,
+                        pattern="back"
                     )
                 ],
                 self.ADD_USER: [
@@ -84,13 +82,41 @@ class BashBot:
             },
             fallbacks=[
                 CommandHandler("end", self._end_conversation_handler)
-
+            ]
+        ))
+        # download
+        self._updater.dispatcher.add_handler(ConversationHandler(
+            entry_points=[
+                CommandHandler('download', self._download_command_handler)
+            ],
+            states={
+                self.DOWNLOAD: [
+                    MessageHandler(Filters.text & (~Filters.command), self._download_handler)
+                ]
+            },
+            fallbacks=[
+                CommandHandler("end", self._end_conversation_handler)
+            ]
+        ))
+        # upload
+        self._updater.dispatcher.add_handler(ConversationHandler(
+            entry_points=[
+                CommandHandler('upload', self._upload_command_handler)
+            ],
+            states={
+                self.UPLOAD: [
+                    MessageHandler(Filters.all & (~Filters.command) & (~Filters.text), self._upload_handler)
+                ]
+            },
+            fallbacks=[
+                CommandHandler("end", self._end_conversation_handler)
             ]
         ))
         # command handlers
         self._updater.dispatcher.add_handler(CommandHandler('start', self._start_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('help', self._help_command_handler))
-        self._updater.dispatcher.add_handler(CommandHandler('download', self._download_command_handler))
+        self._updater.dispatcher.add_handler(CommandHandler('h', self._help_command_handler))
+        self._updater.dispatcher.add_handler(CommandHandler('upload', self._upload_command_handler))
         self._updater.dispatcher.add_handler(CommandHandler('scripts', self._scripts_command_handler))
         # text message handler
         self._updater.dispatcher.add_handler(MessageHandler(Filters.text & (~Filters.command), self._handle_command))
@@ -102,7 +128,10 @@ class BashBot:
         else:
             self._whiteList = None
         self._scripts_json = scripts_json
-        self._scripts = self._get_scripts(self._scripts_json)
+        self._scripts = Script.get_scripts_from_json(self._scripts_json)
+        # init shell
+        self.shell = Shell(self.WORKING_DIRECTORY)
+        print("working directory: " + self.WORKING_DIRECTORY)
 
     def start(self):
         """ start the bot """
@@ -123,8 +152,9 @@ class BashBot:
     def _handle_shell_input(self, update, context, command):
         """ handles an input to the shell, used to handle both single commands and scripts """
         if self._check_permission(update):
-            out = execute_command(command)
-            send_message(update, context, out.decode("utf-8"))
+            out = self.shell.execute_command(command)
+            if out is not None:
+                send_message(update, context, out)
         else:
             send_message(update, context, self._res.ACCESS_DENIED_TEXT)
 
@@ -161,6 +191,7 @@ class BashBot:
         return ConversationHandler.END
 
     def _end_conversation_handler(self, update, context):
+        delete_callback_message(update, context)
         send_message(update, context, self._res.END_TEXT)
         return ConversationHandler.END
 
@@ -184,13 +215,7 @@ class BashBot:
 
     def _help_command_handler(self, update, context):
         """ sends the user the commands + scripts list """
-        text = self._res.BASE_COMMANDS_TEXT
-        if len(self._scripts) != 0:
-            # FIXME
-            text += "\n\n*SCRIPTS*\n"
-            for line in self._scripts:
-                text += line
-        send_message(update, context, text, parse_mode=ParseMode.MARKDOWN)
+        send_message(update, context, self._res.BASE_COMMANDS_TEXT, parse_mode=ParseMode.MARKDOWN)
 
     def _options_command_handler(self, update, context):
         """ shows the user the options keyboard """
@@ -210,12 +235,26 @@ class BashBot:
     def _download_command_handler(self, update, context):
         """ lets the user download a file from the machine """
         if self._check_permission(update):
-            send_message(update, context, "This feature has yet to be implemented")
-            # TODO
+            send_message(update, context, self._res.DOWNLOAD_TEXT)
+            return self.DOWNLOAD
         else:
             send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+            return ConversationHandler.END
+
+    def _upload_command_handler(self, update, context):
+        """ lets the user download a file from the machine """
+        if self._check_permission(update):
+            send_message(update, context, self._res.UPLOAD_TEXT)
+            return self.UPLOAD
+        else:
+            send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+            return ConversationHandler.END
 
     def _scripts_command_handler(self, update, context):
+        send_message(update, context, text="this feature isn't complete yet")
+        return ConversationHandler.END
+
+    def _scripts_command_handler_WIP(self, update, context):
         """ shows the user all the available scripts """
         if self._check_permission(update):
             if len(self._scripts) == 0:
@@ -251,12 +290,36 @@ class BashBot:
                     self._handle_shell_input(update, context, command)
             else:
                 for command in script.description.split("\n"):
-                    execute_command(command)
+                    self.shell.execute_command(command)
             send_message(update, context, self._res.SCRIPT_DONE_TEXT.format(script.name))
         else:
             send_message(update, context, self._res.ACCESS_DENIED_TEXT)
 
     # options callback / conversation handlers -------------------------------------------------------------------------
+
+    def _download_handler(self, update, context):
+        filename = update.message.text
+        path = self.shell.dir + "\\" + filename
+        if os.path.isfile(path):
+            file = open(path, 'rb')
+            send_message(update, context, text=self._res.DOWNLOAD_SUCCESS, file=file)
+            file.close()
+        else:
+            send_message(update, context, text=self._res.DOWNLOAD_FAILED)
+        return ConversationHandler.END
+
+    def _upload_handler(self, update, context):
+        try:
+            file_id = update.message.document["file_id"]
+            file_name = update.message.document["file_name"]
+            file = context.bot.getFile(file_id).download_as_bytearray()
+            new_file = open(self.shell.dir + "\\" + file_name, "wb")
+            new_file.write(file)
+            new_file.close()
+            send_message(update, context, text=self._res.UPLOAD_SUCCESS, parse_mode=ParseMode.MARKDOWN)
+        except TelegramError:
+            send_message(update, context, text=self._res.UPLOAD_FAILED, parse_mode=ParseMode.MARKDOWN)
+        return ConversationHandler.END
 
     def _show_scripts_callback_handler(self, update, context):
         delete_callback_message(update, context)
