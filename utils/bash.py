@@ -17,13 +17,16 @@ class Shell:
                 self.dir = self.home_path
             elif args_list[1] == "..":
                 # go up one level
-                tree = self.dir.split("\\")
+                if not self.is_linux:
+                    tree = self.dir.split("\\")
+                else:
+                    tree = self.dir.split("/")
                 if "" in tree:
                     new_tree = tree[:-2]
                 else:
                     new_tree = tree[:-1]
                 self.dir = self._build_path_from_tree(new_tree)
-            elif args_list[1][0] == "\\":
+            elif args_list[1][0] == "\\" or "/":
                 # go to absolute path
                 if self.is_linux:
                     new_dir = args_list[1]
