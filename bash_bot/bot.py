@@ -439,7 +439,7 @@ class BashBot:
             return ConversationHandler.END
 
     def _remove_from_whitelist(self, update, context):
-        user_id = context.chat_data["argument"]
+        user_id = int(context.chat_data["argument"])
         if user_id in self._whiteList:
             self._whiteList.remove(user_id)
             save_config_json(self._bot_token, self._whiteList)
@@ -449,7 +449,6 @@ class BashBot:
             self._res.REMOVE_FROM_WHITELIST_SUCCESS.format(user_id),
             parse_mode=ParseMode.MARKDOWN
         )
-        save_config_json(self._bot_token, self._whiteList)
 
     # remove script --->
 
