@@ -34,7 +34,14 @@ class Shell:
                 # go down one level
                 sub_folders = [f.name for f in os.scandir(self.dir) if f.is_dir()]
                 if args_list[1] in sub_folders:
-                    self.dir += args_list[1]
+                    if self.is_linux:
+                        if self.dir[-1] != "\\":
+                            self.dir += "\\"
+                        self.dir += args_list[1]
+                    else:
+                        if self.dir[-1] != "/":
+                            self.dir += "/"
+                        self.dir += args_list[1]
                 else:
                     return f"There is no folder named \"{args_list[1]}\" in the current path"
             return self.dir
