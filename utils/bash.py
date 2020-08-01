@@ -17,18 +17,9 @@ class Shell:
                 self.dir = self.home_path
             elif args_list[1] == "..":
                 # go up one level
-                if not self.is_linux:
-                    tree = self.dir.split("\\")
-                    if "" in tree:
-                        new_tree = tree[:-2]
-                    else:
-                        new_tree = tree[:-1]
-                else:
-                    tree = self.dir.split("/")
-                    new_tree = tree[:-1]
-                print(tree)
-                print(new_tree)
-                self.dir = self._build_path_from_tree(new_tree)
+                tree = self.get_tree_from_path(self.dir)
+                new_tree = tree[:-1]
+                self.dir = self.build_path_from_tree(new_tree)
             elif args_list[1][0] == "\\" or "/":
                 # go to absolute path
                 if self.is_linux:
@@ -49,37 +40,52 @@ class Shell:
             return self.dir
         return None
 
-    def _build_path_from_tree(self, tree):
-        path = ""
+    def get_tree_from_path(self, path):
+        cleaned_tree = []
         if not self.is_linux:
+            tree = path.split("\\")
+        else:
+            tree = path.split("/")
+        for branch in tree:
+            if branch != "":
+                cleaned_tree.append(branch)
+        return cleaned_tree
+
+    def build_path_from_tree(self, tree):
+        if not self.is_linux:
+            path = ""
             for branch in tree:
                 path += branch + "\\"
         else:
+            path = "/"
             for branch in tree:
                 path += branch + "/"
         return path
 
     def execute_command(self, command):
-        """ execute a command on the shell """
-        args_list = command.split(" ")
-        cd = self._check_directory_change(args_list)
-        if cd is not None:
-            return cd
-        out = subprocess.run(
-            args_list,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            cwd=self.dir
-        )
-        stdout, stderr = out.stdout, out.stderr
         try:
-            stdout, stderr = stdout.decode(), stderr.decode()
-        except UnicodeDecodeError:
-            pass
-        if stderr is not None:
-            return self._format_output(f"stdout:\n{stdout}\n\nstderr:\n{stderr}")
-        return self._format_output(f"stdout:\n{stdout}")
+            """ execute a command on the shell """
+            args_list = command.split(" ")
+            cd = self._check_directory_change(args_list)
+            if cd is not None:
+                return cd
+            out = subprocess.run(
+                args_list,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=True,
+                cwd=self.dir
+            )
+            stdout, stderr = out.stdout, out.stderr
+            try:
+                stdout, stderr = stdout.decode(), stderr.decode()
+            except UnicodeDecodeError:
+                pass
+            if stderr is not None:
+                return self._format_output(f"stdout:\n{stdout}\n\nstderr:\n{stderr}")
+            return self._format_output(f"stdout:\n{stdout}")
+        except OSError as e:
+            return str(e)
 
     def _format_output(self, string):
         if self.is_linux:
