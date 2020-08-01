@@ -9,6 +9,7 @@ from bash_bot.scripts import Script
 from utils.bash import Shell
 from bash_bot.functions import send_message, get_inline_keyboard_from_string_list, delete_callback_message, \
     get_inline_keyboard_from_script_list
+from utils.files import save_scripts_json, save_config_json
 from utils.resources import Resources
 
 
@@ -30,9 +31,11 @@ class BashBot:
         # options
         OPTIONS,
         ADD_USER,
-        REMOVE_USER
+        REMOVE_USER,
+        REMOVE_SCRIPT,
+        EDIT_SCRIPT
 
-    ] = range(6)
+    ] = range(8)
 
     WORKING_DIRECTORY = os.getcwd()
 
@@ -41,9 +44,9 @@ class BashBot:
         # init resources
         self._res = Resources()
         # init telegram stuff
-        bot_token = config["telegram_bot_token"]
+        self._bot_token = config["telegram_bot_token"]
         whitelist = config["whitelist"]
-        self._updater = Updater(bot_token, use_context=True)
+        self._updater = Updater(self._bot_token, use_context=True)
         # conversation handlers
         yes_handler = CallbackQueryHandler(self._action_confirm_handler, pattern="yes")
         no_handler = CallbackQueryHandler(self._action_cancelled_handler, pattern="no")
@@ -67,6 +70,10 @@ class BashBot:
                         pattern="seeAllScripts"
                     ),
                     CallbackQueryHandler(
+                        self._remove_script_callback_handler,
+                        pattern="removeScript"
+                    ),
+                    CallbackQueryHandler(
                         self._end_conversation_handler,
                         pattern="back"
                     )
@@ -80,6 +87,11 @@ class BashBot:
                     yes_handler,
                     no_handler,
                     CallbackQueryHandler(self._remove_from_whitelist_handler),
+                ],
+                self.REMOVE_SCRIPT: [
+                    yes_handler,
+                    no_handler,
+                    CallbackQueryHandler(self._remove_script_handler),
                 ]
             },
             fallbacks=[
@@ -362,14 +374,19 @@ class BashBot:
             send_message(update, context, self._res.ACCESS_DENIED_TEXT)
 
     def _add_to_whitelist(self, update, context):
-        user_id = context.chat_data["argument"]
-        if self._whiteList is None:
-            self._whiteList = [update.effective_user.id, user_id]
-        elif user_id not in self._whiteList:
-            self._whiteList.append(user_id)
-            send_message(update, context, self._res.ADD_TO_WHITELIST_SUCCESS)
-        else:
-            send_message(update, context, self._res.USER_ALREADY_IN_WHITELIST_TEXT)
+        try:
+            user_id = int(context.chat_data["argument"])
+            if self._whiteList is None:
+                self._whiteList = [update.effective_user.id, user_id]
+                save_config_json(self._bot_token, self._whiteList)
+            elif user_id not in self._whiteList:
+                self._whiteList.append(user_id)
+                send_message(update, context, self._res.ADD_TO_WHITELIST_SUCCESS)
+                save_config_json(self._bot_token, self._whiteList)
+            else:
+                send_message(update, context, self._res.USER_ALREADY_IN_WHITELIST_TEXT)
+        except ValueError:
+            send_message(update, context, text=self._res.USER_ID_VALUE_ERROR, parse_mode=ParseMode.MARKDOWN)
 
     # remove from whitelist --->
 
@@ -400,9 +417,75 @@ class BashBot:
             )
         else:
             send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+            return ConversationHandler.END
 
     def _remove_from_whitelist(self, update, context):
         user_id = context.chat_data["argument"]
         if user_id in self._whiteList:
             self._whiteList.remove(user_id)
-        send_message(update, context, self._res.REMOVE_FROM_WHITELIST_SUCCESS.format(user_id))
+            save_config_json(self._bot_token, self._whiteList)
+        send_message(
+            update,
+            context,
+            self._res.REMOVE_FROM_WHITELIST_SUCCESS.format(user_id),
+            parse_mode=ParseMode.MARKDOWN
+        )
+
+    # remove script --->
+
+    def _remove_script_callback_handler(self, update, context):
+        delete_callback_message(update, context)
+        if len(self._scripts) == 0:
+            send_message(update, context, text=self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
+            return self.OPTIONS
+        send_message(
+            update,
+            context,
+            text=self._res.REMOVE_SCRIPT_TEXT,
+            keyboard=get_inline_keyboard_from_script_list(self._scripts)
+        )
+        return self.REMOVE_SCRIPT
+
+    def _remove_script_handler(self, update, context):
+        delete_callback_message(update, context)
+        if self._check_permission(update):
+            send_message(
+                update,
+                context,
+                text=str(Script.get_script_from_name(self._scripts, update.callback_query.data)),
+                parse_mode=ParseMode.MARKDOWN
+            )
+            self._send_confirmation(
+                update,
+                context,
+                self._remove_script,
+                argument=update.callback_query.data,
+                current_menu=self._options_command_handler
+            )
+        else:
+            send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+            return ConversationHandler.END
+
+    def _remove_script(self, update, context):
+        delete_callback_message(update, context)
+        script_name = context.chat_data["argument"]
+        script = Script.get_script_from_name(self._scripts, script_name)
+        self._scripts.remove(script)
+        send_message(
+            update,
+            context,
+            text=self._res.SCRIPT_SUCCESSFULLY_REMOVED_TEXT.format(script_name)
+        )
+        save_scripts_json(self._scripts)
+
+    # edit script menu --->
+
+    def _edit_script_menu_show_script(self, update, context):
+        send_message(
+            update,
+            context,
+            text=str(context.chat_data["current_script"]),
+            parse_mode=ParseMode.MARKDOWN,
+            keyboard=self._res.EDIT_SCRIPT_KEYBOARD
+        )
+        return self.EDIT_SCRIPT

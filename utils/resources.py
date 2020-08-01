@@ -35,10 +35,13 @@ class Resources:
     SCRIPTS_TEXT = "Here's a list of *all the scripts* you have saved, *click* on the one you want to use."
     NO_SCRIPTS_TEXT = "You *don't* have any saved scripts!"
     SCRIPT_DONE_TEXT = "Finished execution of '{}' script!"
+    REMOVE_SCRIPT_TEXT = "Select which script you want to remove"
+    SCRIPT_SUCCESSFULLY_REMOVED_TEXT = "Script '{}' successfully removed!"
     # add to whitelist
     ADD_TO_WHITELIST_TEXT = "Write the *Telegram ID* of the user you want to *add* to the *whitelist*"
     USER_ALREADY_IN_WHITELIST_TEXT = "The specified user is *already in* the whitelist!"
     ADD_TO_WHITELIST_SUCCESS = "User {} *successfully* added to the whitelist!"
+    USER_ID_VALUE_ERROR = "The user ID *must* be an integer!"
     # remove from whitelist
     NO_USERS_IN_WHITELIST_TEXT = "There *aren't* any users in the whitelist!"
     REMOVE_FROM_WHITELIST_TEXT = "Choose who you want to *remove* from the whitelist"
@@ -49,7 +52,8 @@ class Resources:
         [InlineKeyboardButton("add user ID to Whitelist", callback_data="addToWhitelist")],
         [InlineKeyboardButton("remove user ID from Whitelist", callback_data="removeFromWhitelist")],
         [InlineKeyboardButton("see all scripts", callback_data="seeAllScripts")],
-        [InlineKeyboardButton("add script", callback_data="addScript"),
+        [InlineKeyboardButton("new script", callback_data="addScript"),
+         InlineKeyboardButton("edit script", callback_data="editScript"),
          InlineKeyboardButton("remove script", callback_data="removeScript")],
         [InlineKeyboardButton("Back", callback_data="back")]
     ])
@@ -62,5 +66,6 @@ class Resources:
          InlineKeyboardButton("change description", callback_data="changeDescription")],
         [InlineKeyboardButton("change body", callback_data="changeBody")],
         [InlineKeyboardButton("toggle verbose", callback_data="toggleVerbose")],
-        [InlineKeyboardButton("Back", callback_data="back")]
+        [InlineKeyboardButton("save", callback_data="save"),
+         InlineKeyboardButton("Back", callback_data="back")]
     ])

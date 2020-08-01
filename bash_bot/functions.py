@@ -57,7 +57,7 @@ def delete_callback_message(update, context):
         context.bot.delete_message(chat_id=update.effective_user.id,
                                    message_id=update.callback_query.message.message_id
                                    )
-    except TelegramError:
-        print("The message is too old to be deleted.")
+    except TelegramError as e:
+        print(e)
     except BadRequest as e:
         print(e)
