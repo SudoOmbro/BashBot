@@ -44,6 +44,8 @@ def get_inline_keyboard_from_string_list(input_list):
 
 
 def get_inline_keyboard_from_script_list(script_list):
+    """ creates an inline keyboard from a list of scripts, the callback data of the buttons is
+        the script name that is on the button itself. """
     button_list = []
     for script in script_list:
         name = script.name
@@ -54,9 +56,12 @@ def get_inline_keyboard_from_script_list(script_list):
 def delete_callback_message(update, context):
     """ safe and short way of deleting a message from callback """
     try:
-        context.bot.delete_message(chat_id=update.effective_user.id,
-                                   message_id=update.callback_query.message.message_id
-                                   )
+        context.bot.delete_message(
+            chat_id=update.effective_user.id,
+            message_id=update.callback_query.message.message_id
+        )
+    except AttributeError:
+        pass
     except TelegramError as e:
         print(e)
     except BadRequest as e:

@@ -1,9 +1,9 @@
 # BashBot
-_a bot that lets you access your server from telegram_
+_a bot that lets you access and interact with your server from Telegram_
 
 **DISCLAIMER**
 
-This is still a very early version, it's basically just a proof of concept at this point
+This in an early version, there may be some bugs.
 
 # features
 
@@ -12,9 +12,6 @@ This is still a very early version, it's basically just a proof of concept at th
 * **whitelist**
 * **scripts**
 * **options** screen to add/remove users to/from the whitelist
-
-**coming later:**
-
 * runtime **script editor**
 
 # Notes

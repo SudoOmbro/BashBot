@@ -22,7 +22,7 @@ class Resources:
     OPTIONS_TEXT = "Here's what *you* can do"
     CONFIRM_TEXT = "Are you sure?"
     CANCEL_TEXT = "Alright, the operation was cancelled."
-    END_TEXT = "Ok, back to the main menu"
+    END_TEXT = "Ok, exited to shell input"
     # download
     DOWNLOAD_TEXT = "write the name of the file you want to download to your device"
     DOWNLOAD_FAILED = "Could not find the specified file"
@@ -37,6 +37,8 @@ class Resources:
     SCRIPT_DONE_TEXT = "Finished execution of '{}' script!"
     REMOVE_SCRIPT_TEXT = "Select which script you want to remove"
     SCRIPT_SUCCESSFULLY_REMOVED_TEXT = "Script '{}' successfully removed!"
+    SCRIPT_SUCCESSFULLY_SAVED_TEXT = "The current script was *successfully saved*!"
+    SCRIPTS_SHOW_ALL_TEXT = "Here's a list of all the saved scripts"
     # add to whitelist
     ADD_TO_WHITELIST_TEXT = "Write the *Telegram ID* of the user you want to *add* to the *whitelist*"
     USER_ALREADY_IN_WHITELIST_TEXT = "The specified user is *already in* the whitelist!"
@@ -52,7 +54,7 @@ class Resources:
         [InlineKeyboardButton("add user ID to Whitelist", callback_data="addToWhitelist")],
         [InlineKeyboardButton("remove user ID from Whitelist", callback_data="removeFromWhitelist")],
         [InlineKeyboardButton("see all scripts", callback_data="seeAllScripts")],
-        [InlineKeyboardButton("new script", callback_data="addScript"),
+        [InlineKeyboardButton("new script", callback_data="newScript"),
          InlineKeyboardButton("edit script", callback_data="editScript"),
          InlineKeyboardButton("remove script", callback_data="removeScript")],
         [InlineKeyboardButton("Back", callback_data="back")]
@@ -62,9 +64,9 @@ class Resources:
         [InlineKeyboardButton("cancel", callback_data="no")]
     ])
     EDIT_SCRIPT_KEYBOARD = InlineKeyboardMarkup([
-        [InlineKeyboardButton("change title", callback_data="changeTitle"),
-         InlineKeyboardButton("change description", callback_data="changeDescription")],
-        [InlineKeyboardButton("change body", callback_data="changeBody")],
+        [InlineKeyboardButton("change title", callback_data="change_name"),
+         InlineKeyboardButton("change description", callback_data="change_description")],
+        [InlineKeyboardButton("change body", callback_data="change_body")],
         [InlineKeyboardButton("toggle verbose", callback_data="toggleVerbose")],
         [InlineKeyboardButton("save", callback_data="save"),
          InlineKeyboardButton("Back", callback_data="back")]

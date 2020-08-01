@@ -33,9 +33,11 @@ class BashBot:
         ADD_USER,
         REMOVE_USER,
         REMOVE_SCRIPT,
-        EDIT_SCRIPT
+        LOAD_SCRIPT,
+        EDIT_SCRIPT,
+        EDIT_SCRIPT_TEXTFIELD
 
-    ] = range(8)
+    ] = range(10)
 
     WORKING_DIRECTORY = os.getcwd()
 
@@ -74,6 +76,14 @@ class BashBot:
                         pattern="removeScript"
                     ),
                     CallbackQueryHandler(
+                        self._edit_script_menu_new_script,
+                        pattern="newScript"
+                    ),
+                    CallbackQueryHandler(
+                      self._edit_script_menu_load_script_handler,
+                      pattern="editScript"
+                    ),
+                    CallbackQueryHandler(
                         self._end_conversation_handler,
                         pattern="back"
                     )
@@ -92,6 +102,18 @@ class BashBot:
                     yes_handler,
                     no_handler,
                     CallbackQueryHandler(self._remove_script_handler),
+                ],
+                self.LOAD_SCRIPT: [
+                    CallbackQueryHandler(self._edit_script_menu_load_script)
+                ],
+                self.EDIT_SCRIPT: [
+                    CallbackQueryHandler(self._toggle_script_verbose_handler, pattern="toggleVerbose"),
+                    CallbackQueryHandler(self._edit_script_save, pattern="save"),
+                    CallbackQueryHandler(self._edit_script_back, pattern="back"),
+                    CallbackQueryHandler(self._edit_script_text_field_handler)
+                ],
+                self.EDIT_SCRIPT_TEXTFIELD: [
+                    MessageHandler(Filters.text & (~Filters.command), self._edit_script_text_field)
                 ]
             },
             fallbacks=[
@@ -489,3 +511,72 @@ class BashBot:
             keyboard=self._res.EDIT_SCRIPT_KEYBOARD
         )
         return self.EDIT_SCRIPT
+
+    def _edit_script_menu_new_script(self, update, context):
+        delete_callback_message(update, context)
+        if self._check_permission(update):
+            context.chat_data["current_script"] = Script("script name", "cd", "script description", True)
+            self._edit_script_menu_show_script(update, context)
+            return self.EDIT_SCRIPT
+        send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+        return ConversationHandler.END
+
+    def _edit_script_menu_load_script_handler(self, update, context):
+        if self._check_permission(update):
+            delete_callback_message(update, context)
+            send_message(
+                update,
+                context,
+                text=self._res.SCRIPTS_SHOW_ALL_TEXT,
+                keyboard=get_inline_keyboard_from_script_list(self._scripts)
+            )
+            return self.LOAD_SCRIPT
+        send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+        return ConversationHandler.END
+
+    def _edit_script_menu_load_script(self, update, context):
+        context.chat_data["current_script"] = Script.get_script_from_name(self._scripts, update.callback_query.data)
+        return self._edit_script_menu_show_script(update, context)
+
+    def _edit_script_text_field_handler(self, update, context):
+        delete_callback_message(update, context)
+        field = update.callback_query.data.replace("change_", "")
+        context.chat_data["argument"] = field
+        send_message(
+            update,
+            context,
+            text="`{}`".format(context.chat_data["current_script"].__dict__[field]),
+            parse_mode=ParseMode.MARKDOWN
+        )
+        return self.EDIT_SCRIPT_TEXTFIELD
+
+    def _edit_script_text_field(self, update, context):
+        field = context.chat_data["argument"]
+        text = update.message.text
+        context.chat_data["current_script"].__dict__[field] = text
+        return self._edit_script_menu_show_script(update, context)
+
+    def _toggle_script_verbose_handler(self, update, context):
+        delete_callback_message(update, context)
+        context.chat_data["current_script"].verbose = not context.chat_data["current_script"].verbose
+        self._edit_script_menu_show_script(update, context)
+
+    def _edit_script_save(self, update, context):
+        delete_callback_message(update, context)
+        if self._check_permission(update):
+            context.chat_data["current_script"].save(self._scripts)
+            save_scripts_json(self._scripts)
+            send_message(
+                update,
+                context,
+                text=self._res.SCRIPT_SUCCESSFULLY_SAVED_TEXT,
+                parse_mode=ParseMode.MARKDOWN
+            )
+            self._edit_script_menu_show_script(update, context)
+        else:
+            send_message(update, context, self._res.ACCESS_DENIED_TEXT)
+            return ConversationHandler.END
+
+    def _edit_script_back(self, update, context):
+        delete_callback_message(update, context)
+        return self._options_command_handler(update, context)
