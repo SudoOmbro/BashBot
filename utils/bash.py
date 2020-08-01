@@ -20,7 +20,7 @@ class Shell:
                 tree = self.get_tree_from_path(self.dir)
                 new_tree = tree[:-1]
                 self.dir = self.build_path_from_tree(new_tree)
-            elif args_list[1][0] == "\\" or "/":
+            elif args_list[1][0] == "\\" or args_list[1][0] == "/":
                 # go to absolute path
                 if self.is_linux:
                     new_dir = args_list[1]
