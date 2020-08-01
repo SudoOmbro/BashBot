@@ -25,6 +25,8 @@ class Shell:
                     new_tree = tree[:-2]
                 else:
                     new_tree = tree[:-1]
+                print(tree)
+                print(new_tree)
                 self.dir = self._build_path_from_tree(new_tree)
             elif args_list[1][0] == "\\" or "/":
                 # go to absolute path
