@@ -19,11 +19,12 @@ class Shell:
                 # go up one level
                 if not self.is_linux:
                     tree = self.dir.split("\\")
+                    if "" in tree:
+                        new_tree = tree[:-2]
+                    else:
+                        new_tree = tree[:-1]
                 else:
                     tree = self.dir.split("/")
-                if "" in tree:
-                    new_tree = tree[:-2]
-                else:
                     new_tree = tree[:-1]
                 print(tree)
                 print(new_tree)
@@ -48,11 +49,14 @@ class Shell:
             return self.dir
         return None
 
-    @staticmethod
-    def _build_path_from_tree(tree):
+    def _build_path_from_tree(self, tree):
         path = ""
-        for branch in tree:
-            path += branch + "\\"
+        if not self.is_linux:
+            for branch in tree:
+                path += branch + "\\"
+        else:
+            for branch in tree:
+                path += branch + "/"
         return path
 
     def execute_command(self, command):
