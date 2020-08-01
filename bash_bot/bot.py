@@ -449,6 +449,7 @@ class BashBot:
             self._res.REMOVE_FROM_WHITELIST_SUCCESS.format(user_id),
             parse_mode=ParseMode.MARKDOWN
         )
+        save_config_json(self._bot_token, self._whiteList)
 
     # remove script --->
 
