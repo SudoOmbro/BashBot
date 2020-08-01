@@ -520,14 +520,18 @@ class BashBot:
 
     def _edit_script_menu_load_script_handler(self, update, context):
         if self._check_permission(update):
-            delete_callback_message(update, context)
-            send_message(
-                update,
-                context,
-                text=self._res.SCRIPTS_SHOW_ALL_TEXT,
-                keyboard=get_inline_keyboard_from_script_list(self._scripts)
-            )
-            return self.LOAD_SCRIPT
+            if len(self._scripts) != 0:
+                delete_callback_message(update, context)
+                send_message(
+                    update,
+                    context,
+                    text=self._res.SCRIPTS_SHOW_ALL_TEXT,
+                    keyboard=get_inline_keyboard_from_script_list(self._scripts)
+                )
+                return self.LOAD_SCRIPT
+            else:
+                send_message(update, context, text=self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
+                return self.OPTIONS
         send_message(update, context, self._res.ACCESS_DENIED_TEXT)
         return ConversationHandler.END
 
