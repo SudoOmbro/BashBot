@@ -456,7 +456,7 @@ class BashBot:
         delete_callback_message(update, context)
         if len(self._scripts) == 0:
             send_message(update, context, text=self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
-            return self.OPTIONS
+            return self._options_command_handler(update, context)
         send_message(
             update,
             context,
