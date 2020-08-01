@@ -58,7 +58,8 @@ class Shell:
             return cd
         out = subprocess.run(
             args_list,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             shell=True,
             cwd=self.dir
         )
