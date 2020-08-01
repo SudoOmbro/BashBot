@@ -519,6 +519,7 @@ class BashBot:
         return ConversationHandler.END
 
     def _edit_script_menu_load_script_handler(self, update, context):
+        delete_callback_message(update, context)
         if self._check_permission(update):
             if len(self._scripts) != 0:
                 delete_callback_message(update, context)
@@ -531,7 +532,7 @@ class BashBot:
                 return self.LOAD_SCRIPT
             else:
                 send_message(update, context, text=self._res.NO_SCRIPTS_TEXT, parse_mode=ParseMode.MARKDOWN)
-                return self.OPTIONS
+                return self._options_command_handler(update, context)
         send_message(update, context, self._res.ACCESS_DENIED_TEXT)
         return ConversationHandler.END
 
