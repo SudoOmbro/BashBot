@@ -344,9 +344,8 @@ class BashBot:
 
     def _download_handler(self, update, context):
         filename = update.message.text
-        path = self.shell.dir + "\\" + filename
-        if os.path.isfile(path):
-            file = open(path, 'rb')
+        file = self.shell.download_file(filename)
+        if file is not None:
             send_message(update, context, text=self._res.DOWNLOAD_SUCCESS, file=file)
             file.close()
         else:
@@ -358,9 +357,7 @@ class BashBot:
             file_id = update.message.document["file_id"]
             file_name = update.message.document["file_name"]
             file = context.bot.getFile(file_id).download_as_bytearray()
-            new_file = open(self.shell.dir + "\\" + file_name, "wb")
-            new_file.write(file)
-            new_file.close()
+            self.shell.upload_file(file, file_name)
             send_message(update, context, text=self._res.UPLOAD_SUCCESS, parse_mode=ParseMode.MARKDOWN)
         except TelegramError:
             send_message(update, context, text=self._res.UPLOAD_FAILED, parse_mode=ParseMode.MARKDOWN)

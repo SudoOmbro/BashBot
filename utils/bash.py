@@ -98,3 +98,20 @@ class Shell:
         if self.is_linux:
             return string
         return string.replace("\\n", "\n").replace("\\r", "\r").replace("\\t", "\t")
+
+    def upload_file(self, file, file_name):
+        if not self.is_linux:
+            new_file = open(self.dir + "\\" + file_name, "wb")
+        else:
+            new_file = open(self.dir + "/" + file_name, "wb")
+        new_file.write(file)
+        new_file.close()
+
+    def download_file(self, filename: str):
+        if not self.is_linux:
+            path = self.dir + "\\" + filename
+        else:
+            path = self.dir + "/" + filename
+        if os.path.isfile(path):
+            return open(path, "rb")
+        return None
