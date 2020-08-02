@@ -87,8 +87,6 @@ class Shell:
         print(args_list)
         return subprocess.check_output(
             args_list,
-            timeout=1,
-            stderr=subprocess.STDOUT,
             shell=True
         )
 
