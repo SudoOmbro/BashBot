@@ -96,11 +96,7 @@ class Shell:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        output = subprocess.check_output(
-            ('grep', 'process_name'),
-            stdin=ps.stdout
-        )
-        ps.wait()
+        output = ps.communicate()
         print(output)
         return output
 
