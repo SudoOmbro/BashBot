@@ -81,8 +81,11 @@ class Shell:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+                close_fds=True,
                 shell=True,
-                cwd=self.dir
+                cwd=self.dir,
+                timeout=10,
+                universal_newlines=True
             )
             return self._parse_command_result(out)
         except OSError as e:
@@ -93,6 +96,8 @@ class Shell:
         try:
             stdout, stderr = stdout.decode(), stderr.decode()
         except UnicodeDecodeError:
+            pass
+        except AttributeError:
             pass
         if stderr is not None:
             return self._format_output(f"stdout:\n{stdout}\n\nstderr:\n{stderr}")
