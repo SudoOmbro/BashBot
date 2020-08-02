@@ -193,7 +193,7 @@ class BashBot:
 
     def _check_permission(self, update):
         """ checks if the update comes from a whitelisted user """
-        if self._whiteList is not None:
+        if self._whiteList is not None and len(self._whiteList) != 0:
             return update.effective_user.id in self._whiteList
         return True
 
