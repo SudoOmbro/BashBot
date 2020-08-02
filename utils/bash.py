@@ -86,6 +86,7 @@ class Shell:
     def _run_command(args_list):
         return subprocess.check_output(
             args_list,
+            timeout=1,
             stderr=subprocess.STDOUT,
             shell=True
         )
