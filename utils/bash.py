@@ -76,7 +76,14 @@ class Shell:
             cd = self._check_directory_change(args_list)
             if cd is not None:
                 return cd
-            out = subprocess.run(
+            out = self._run_command(args_list)
+            return self._parse_command_result(out)
+        except OSError as e:
+            return str(e)
+
+    def _run_command(self, args_list):
+        if not self.is_linux:
+            return subprocess.run(
                 args_list,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
@@ -84,12 +91,16 @@ class Shell:
                 close_fds=True,
                 shell=True,
                 cwd=self.dir,
-                timeout=10,
                 universal_newlines=True
             )
-            return self._parse_command_result(out)
-        except OSError as e:
-            return str(e)
+        return subprocess.Popen(
+            args_list,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            cwd=self.dir,
+            universal_newlines=True
+        )
 
     def _parse_command_result(self, out):
         stdout, stderr = out.stdout, out.stderr
