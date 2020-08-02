@@ -97,9 +97,12 @@ class Shell:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        output = ps.communicate(
-            timeout=1
-        )
+        try:
+            output = ps.communicate(
+                timeout=1
+            )
+        except subprocess.TimeoutExpired:
+            return ps.stdout, ps.stderr
         print(output)
         return output[0], output[1]
 
