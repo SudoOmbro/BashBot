@@ -93,6 +93,8 @@ class Shell:
 
     def _parse_command_result(self, out):
         stdout, stderr = out.stdout, out.stderr
+        print(stdout)
+        print(stderr)
         try:
             stdout, stderr = stdout.decode(), stderr.decode()
         except UnicodeDecodeError:
