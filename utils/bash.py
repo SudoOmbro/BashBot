@@ -77,27 +77,48 @@ class Shell:
             if cd is not None:
                 return cd
             out = self._run_command(args_list)
-            print(out)
             return self._parse_command_result(out)
         except OSError as e:
-            return str(e)
+            return e
 
-    @staticmethod
-    def _run_command(args_list):
+    def _run_command(self, args_list):
         print(args_list)
-        return subprocess.check_output(
+        if not self.is_linux:
+            return subprocess.run(
+                args_list,
+                shell=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+        ps = subprocess.Popen(
             args_list,
-            shell=True
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
+        output = subprocess.check_output(
+            ('grep', 'process_name'),
+            stdin=ps.stdout
+        )
+        ps.wait()
+        print(output)
+        return output
 
     def _parse_command_result(self, out):
+        stdout = out.stdout
+        stderr = out.stderr
         try:
-            out = out.decode()
+            stdout = stdout.decode()
+            stderr = stderr.decode()
         except UnicodeDecodeError:
             pass
         except AttributeError:
             pass
-        return self._format_output(out)
+        print(stdout)
+        print(stderr)
+        if stderr is not None:
+            return self._format_output(f"stdout:\n{stdout}\n\nstderr:\n{stderr}")
+        return self._format_output(f"stdout:\n{stdout}")
 
     def _format_output(self, string):
         if self.is_linux:
