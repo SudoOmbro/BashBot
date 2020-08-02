@@ -82,7 +82,6 @@ class Shell:
             return e
 
     def _run_command(self, args_list):
-        print(args_list)
         if not self.is_linux:
             out = subprocess.run(
                 args_list,
@@ -103,7 +102,6 @@ class Shell:
             )
         except subprocess.TimeoutExpired:
             return ps.stdout, ps.stderr
-        print(output)
         return output[0], output[1]
 
     def _parse_command_result(self, stdout, stderr):
@@ -114,8 +112,6 @@ class Shell:
             pass
         except AttributeError:
             pass
-        print(stdout)
-        print(stderr)
         if stderr is not None:
             return self._format_output(f"stdout:\n{stdout}\n\nstderr:\n{stderr}")
         return self._format_output(f"stdout:\n{stdout}")
