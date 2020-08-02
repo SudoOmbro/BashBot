@@ -95,9 +95,11 @@ class Shell:
         ps = subprocess.Popen(
             args_list,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
-        output = ps.communicate()
+        output = ps.communicate(
+            timeout=1
+        )
         print(output)
         return output[0], output[1]
 
