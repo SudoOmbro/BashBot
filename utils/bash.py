@@ -78,21 +78,25 @@ class Shell:
                 return cd
             out = subprocess.run(
                 args_list,
+                stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 shell=True,
                 cwd=self.dir
             )
-            stdout, stderr = out.stdout, out.stderr
-            try:
-                stdout, stderr = stdout.decode(), stderr.decode()
-            except UnicodeDecodeError:
-                pass
-            if stderr is not None:
-                return self._format_output(f"stdout:\n{stdout}\n\nstderr:\n{stderr}")
-            return self._format_output(f"stdout:\n{stdout}")
+            return self._parse_command_result(out)
         except OSError as e:
             return str(e)
+
+    def _parse_command_result(self, out):
+        stdout, stderr = out.stdout, out.stderr
+        try:
+            stdout, stderr = stdout.decode(), stderr.decode()
+        except UnicodeDecodeError:
+            pass
+        if stderr is not None:
+            return self._format_output(f"stdout:\n{stdout}\n\nstderr:\n{stderr}")
+        return self._format_output(f"stdout:\n{stdout}")
 
     def _format_output(self, string):
         if self.is_linux:
