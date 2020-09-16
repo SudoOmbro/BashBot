@@ -21,6 +21,7 @@ Requires **at least Python 3.6** to work
 * When uploading a file through the bot, make sure to send it as file, even it it's an image.
 * when using the "cd" command, note that "cd ~" won't work, use just "cd" instead.
 * when adding a user to an empty whitelist, you'll be added as well.
+* for now the bot only supports polling updates, no webhooks.
 
 # How to setup
 * clone the repository
